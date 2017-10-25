@@ -109,6 +109,30 @@ public class FixDAO {
 		}
 	}
 	
+	public void lookUp(int no) throws Exception {
+		try {
+			con = ConnectionPool.getConnection();
+			sb = new StringBuffer();
+			sb.append("update t_fixboard set look = look+1 where no = ?");
+			
+			ptmt = con.prepareStatement(sb.toString());
+			
+			ptmt.setInt(1, no);
+			
+			ptmt.executeQuery();
+		} catch (Exception e) {
+			// TODO: handle exception
+			throw e;
+		} finally {
+			try {
+				ptmt.close();
+			} catch (Exception e2) {
+				// TODO: handle exception
+			}
+			ConnectionPool.releaseConnection(con);
+		}
+	}
+	
 	public FixVO detailFix(int no) throws Exception {
 		FixVO fix = new FixVO();
 		fix.setNo(no);
@@ -133,7 +157,7 @@ public class FixDAO {
 				fix.setBrand(rs.getString("brand"));
 				fix.setCate(rs.getString("cate"));
 				fix.setId(rs.getString("id"));
-				fix.setLike(detailLike(no));
+				fix.setLook(rs.getInt("look"));
 			}
 			
 		} catch (Exception e) {
@@ -155,8 +179,12 @@ public class FixDAO {
 			con = ConnectionPool.getConnection();
 			sb = new StringBuffer();
 			sb.append("update t_fixboard set ")
-			  .append("title = ?, content = ?, thumb = ? ")
-			  .append("where no = ?");
+			  .append("title = ?, content = ?, cate = ?, brand = ?");
+			  
+			if(vo.getThumb() != null)
+				sb.append(", thumb = ?");
+			
+			sb.append(" where no = ?");
 			
 			ptmt = con.prepareStatement(sb.toString());
 			
@@ -164,7 +192,11 @@ public class FixDAO {
 
 			ptmt.setString(index++, vo.getTitle());
 			ptmt.setString(index++, vo.getContent());
-			ptmt.setString(index++, vo.getThumb());
+			ptmt.setString(index++, vo.getCate());
+			ptmt.setString(index++, vo.getBrand());
+			if(vo.getThumb() != null)
+				ptmt.setString(index++, vo.getThumb());
+			ptmt.setInt(index++, vo.getNo());
 			
 			ptmt.executeUpdate();
 		} catch (Exception e) {
@@ -190,12 +222,69 @@ public class FixDAO {
 			  .append(order+") aaa) ");
 			if(page != 0) {
 				sb.append("where nnn between ")
-				  .append(page+"*6-5 and "+page+"*6");
+				  .append(page+"*8-7 and "+page+"*8");
 				
-			//6 = 한 페이지에 가져올 갯수
+			//8 = 한 페이지에 가져올 갯수
 			}
 			
 			ptmt = con.prepareStatement(sb.toString());
+
+			rs = ptmt.executeQuery();
+
+			while(rs.next()) {
+				FixVO fix = new FixVO();
+				
+				fix.setRegDate(rs.getTimestamp("reg_date"));
+				fix.setTitle(rs.getString("title"));
+				fix.setWriter(rs.getString("writer"));
+				fix.setThumb(rs.getString("thumb"));
+				fix.setNo(rs.getInt("no"));
+				
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+				long fixTime = Long.parseLong(sdf.format(fix.getRegDate()));
+				long nowTime = Long.parseLong(sdf.format(new Date()));
+				
+				if(nowTime - fixTime <= 10000)
+					fix.setChk(true);
+				else
+					fix.setChk(false);
+
+				list.add(fix);
+			}
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			throw e;
+		} finally {
+			try {
+				ptmt.close();
+			} catch (Exception e2) {
+				// TODO: handle exception
+			}
+			ConnectionPool.releaseConnection(con);
+		}
+		return list;
+	}
+	
+	public List<FixVO> listFix(String order, String title, String cate, String brand, int page) throws Exception {
+		List<FixVO> list = new ArrayList<FixVO>();
+		try {
+			con = ConnectionPool.getConnection();
+			sb = new StringBuffer();
+			sb.append("select * from (select rownum as nnn, aaa.* from (select * from t_fixboard where ")
+			  .append(order+" order by no desc) aaa) ");
+			if(page != 0) {
+				sb.append("where nnn between ")
+				  .append(page+"*8-7 and "+page+"*8");
+			}
+			
+			ptmt = con.prepareStatement(sb.toString());
+			
+			int index = 1;
+			
+			if(title.length() > 2) ptmt.setString(index++, title);
+			if(cate.length() > 0 && !cate.equals("전체")) ptmt.setString(index++, cate);
+			if(brand.length() > 0 && !brand.equals("전체")) ptmt.setString(index++, brand);
 
 			rs = ptmt.executeQuery();
 
@@ -235,6 +324,42 @@ public class FixDAO {
 	}
 	
 	///////////////////페이지
+	
+	public int Page(String order, String title, String cate, String brand) throws Exception {
+		int a = 0;
+		try {
+			con = ConnectionPool.getConnection();
+			sb = new StringBuffer();
+			sb.append("select count(*) ")
+			  .append("from t_fixboard where ")
+			  .append(order);
+			
+			ptmt = con.prepareStatement(sb.toString());
+			
+			int index = 1; 
+			
+			if(title.length() > 2) ptmt.setString(index++, title);
+			if(cate.length() > 0 && !cate.equals("전체")) ptmt.setString(index++, cate);
+			if(brand.length() > 0 && !brand.equals("전체")) ptmt.setString(index++, brand);
+
+			rs = ptmt.executeQuery();
+
+			if(rs.next())
+				a = rs.getInt(1);
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			throw e;
+		} finally {
+			try {
+				ptmt.close();
+			} catch (Exception e2) {
+				// TODO: handle exception
+			}
+			ConnectionPool.releaseConnection(con);
+		}
+		return a;
+	}
 	
 	public int Page() throws Exception {
 		int a = 0;
@@ -390,9 +515,9 @@ public class FixDAO {
 			con = ConnectionPool.getConnection();
 			sb = new StringBuffer();
 			sb.append("insert into t_fiximageboard (");
-			sb.append("image_no, no, ori_name, sys_name) ");
+			sb.append("image_no, no, ori_name, sys_name, width) ");
 			sb.append("values (");
-			sb.append("fiximageboard_no.nextval,?,?,?)");
+			sb.append("fiximageboard_no.nextval,?,?,?,?)");
 			
 			ptmt = con.prepareStatement(sb.toString());
 			
@@ -400,6 +525,30 @@ public class FixDAO {
 			ptmt.setInt(index++, fix.getNo());
 			ptmt.setString(index++, fix.getOriName());
 			ptmt.setString(index++, fix.getSysName());
+			ptmt.setInt(index++, fix.getWidth());
+			
+			ptmt.executeUpdate();
+		} catch (SQLException e) {
+			throw e;
+		}finally {
+			ConnectionPool.releaseConnection(con);
+		}
+	}
+	
+	public void modifyFile(FixVO fix) throws Exception {
+		try {
+			con = ConnectionPool.getConnection();
+			sb = new StringBuffer();
+			sb.append("update t_fiximageboard set ")
+			  .append("ori_name = ?, sys_name = ?, width = ? ")
+			  .append("where image_no = ?");
+			
+			ptmt = con.prepareStatement(sb.toString());
+			
+			ptmt.setString(1, fix.getOriName());
+			ptmt.setString(2, fix.getSysName());
+			ptmt.setInt(3, fix.getWidth());
+			ptmt.setInt(4, fix.getImageNo());
 			
 			ptmt.executeUpdate();
 		} catch (SQLException e) {
@@ -430,6 +579,7 @@ public class FixDAO {
 				vo.setImageNo(rs.getInt("image_no"));
 				vo.setSysName(rs.getString("sys_name"));
 				vo.setOriName(rs.getString("ori_name"));
+				vo.setWidth(rs.getInt("width"));
 				
 				list.add(vo);
 			}
@@ -518,9 +668,7 @@ public class FixDAO {
 			
 			if(rs.next())
 				a = rs.getInt(1);
-			
-			System.out.println(rs.getInt(1));
-			
+
 		} catch (Exception e) {
 			// TODO: handle exception
 			throw e;

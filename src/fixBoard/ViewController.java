@@ -30,6 +30,7 @@ public class ViewController extends HttpServlet{
 		List<FixVO> file = null;
 		
 		try {
+			dao.lookUp(no);
 			fix = dao.detailFix(no);
 			file = dao.detailFile(no);
 		} catch (Exception e) {

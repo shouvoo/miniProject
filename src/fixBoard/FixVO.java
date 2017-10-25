@@ -5,14 +5,26 @@ import java.util.Date;
 public class FixVO {
 	private String title, content, writer, thumb, ip, oriName, sysName, cate, brand, id;
 	private Date regDate;
-	private int no, commentNo, imageNo, Like;
+	private int no, commentNo, imageNo, like, look, width;
 	private boolean chk;
 	
+	public int getWidth() {
+		return width;
+	}
+	public void setWidth(int width) {
+		this.width = width;
+	}
+	public int getLook() {
+		return look;
+	}
+	public void setLook(int look) {
+		this.look = look;
+	}
 	public int getLike() {
-		return Like;
+		return like;
 	}
 	public void setLike(int like) {
-		Like = like;
+		this.like = like;
 	}
 	public String getId() {
 		return id;

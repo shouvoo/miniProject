@@ -1,6 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!-- 합쳐지고 최소화된 최신 CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+
+<!-- 부가적인 테마 -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+
+<!-- 합쳐지고 최소화된 최신 자바스크립트 -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 <style>
 .writeTitle{font: 20px bold; color: #0085D5; background: rgb(239, 239, 239); width: 100%;
 margin-bottom: 10px;}
@@ -15,9 +23,72 @@ display: inline-block; width: 50px;}
 textarea {width: 500px;}
 .filebox, .filebox1, .filebox2, .filebox3, .filebox4 {border: none;}
 #ex_filename {display: none;}
+.content{margin-top: 50px;}
 </style>
 <script src="http://code.jquery.com/jquery-2.1.4.js"></script>
-<script type="text/javascript">
+<script>
+function hh(a){
+	$('.hidden'+a).css('display','block');
+	$('.button'+a).css('display','none');
+	document.getElementsByName("hiddenfile"+(a))[0].name="file"+(a+1);
+	document.getElementsByName("hiddencontent"+(a+1))[0].name="content"+(a+1);
+}
+
+function chk() {
+	var IMG_FORMAT = "\.(bmp|gif|jpg|jpeg|png)$";
+
+	if(document.form1.file1){
+		if(!new RegExp(IMG_FORMAT, "i").test(document.form1.file1.value)) {
+	    	alert("111파일은 필수 첨부입니다.(이미지 파일 외 입력 불가)");
+	    	return false;
+		} else {
+			if(document.form1.file2){
+				if(!new RegExp(IMG_FORMAT, "i").test(document.form1.file2.value)) {
+			    	alert("222파일은 필수 첨부입니다.(이미지 파일 외 입력 불가)");
+			    	return false;
+				} else {
+					if(document.form1.file3){
+						if(!new RegExp(IMG_FORMAT, "i").test(document.form1.file3.value)) {
+					    	alert("333파일은 필수 첨부입니다.(이미지 파일 외 입력 불가)");
+					    	return false;
+						} else {
+							if(document.form1.file4){
+								if(!new RegExp(IMG_FORMAT, "i").test(document.form1.file4.value)) {
+							    	alert("444파일은 필수 첨부입니다.(이미지 파일 외 입력 불가)");
+							    	return false;
+								} else {
+									if(document.form1.file5){
+										if(!new RegExp(IMG_FORMAT, "i").test(document.form1.file5.value)) {
+									    	alert("555파일은 필수 첨부입니다.(이미지 파일 외 입력 불가)");
+									    	return false;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+    
+	if(document.form1.content1.value == '내용을 입력하세요.' || !document.form1.content1.value) {
+    	alert("텍스트 문서가 비었습니다."); return false;}
+
+    if(!document.form1.content2.value) {
+    	alert("텍스트 문서가 비었습니다."); return false;}
+    
+    if(!document.form1.content3.value) {
+    	alert("텍스트 문서가 비었습니다."); return false;}
+    
+    if(!document.form1.content4.value) {
+    	alert("텍스트 문서가 비었습니다."); return false;}
+    
+    if(!document.form1.content5.value) {
+    	alert("텍스트 문서가 비었습니다."); return false;}
+    
+    return true;
+}
 </script>
 
 <c:choose>
@@ -29,9 +100,12 @@ location.href='list';
 </c:when>
 
 <c:otherwise>
+<div class="header">
+		<c:import url="/include/topMenu.jsp" />
+</div>
 <div class="content">
 	<form action="${pageContext.request.contextPath }/fix/writeinsert" method="post"
-	enctype="multipart/form-data">
+	enctype="multipart/form-data" name="form1" onsubmit="return chk()" style="height: 800px;">
 	
 	<div class="writeTitle">
 		새로운 글
@@ -75,90 +149,78 @@ location.href='list';
 	</div>
 	
 	<div class="input">
-		<textarea name="content" style="height: 50px;"
-		onclick="if(this.value=='내용을 입력하세요.'){this.value=''}">내용을 입력하세요.</textarea>
+		<textarea name="content1" style="height: 50px;"
+		onclick="if (this.value == '내용을 입력하세요.') {this.value = ''}">내용을 입력하세요.</textarea>
 	</div>
 	
 	<div class="button1">
-		<button type="button" onclick="
-		$('.hidden1').css('display','block');
-		$('.button1').css('display','none');
-		">내용 추가하기</button>
+		<button type="button" onclick="hh(1)">내용 추가하기</button>
 	</div>
 	</div>
 	
 	<div class="hidden1">
 	<div class="input">
 		<div class="filebox">
-			<input type="file" name="file2">
+			<input type="file" name="hiddenfile1">
 		</div>
 	</div>
 	
 	<div class="input">
-		<textarea name="content" style="height: 50px;"></textarea>
+		<textarea name="hiddencontent2" style="height: 50px;"></textarea>
 	</div>
 	
 	<div class="button2">
-		<button type="button" onclick="
-		$('.hidden2').css('display','block');
-		$('.button2').css('display','none');
-		">내용 추가하기</button>
+		<button type="button" onclick="hh(2)">내용 추가하기</button>
 	</div>
 	</div>
 	
 	<div class="hidden2">
 	<div class="input">
 		<div class="filebox">
-			<input type="file" name="file3">
+			<input type="file" name="hiddenfile2">
 		</div>
 	</div>
 	
 	<div class="input">
-		<textarea name="content" style="height: 50px;"></textarea>
+		<textarea name="hiddencontent3" style="height: 50px;"></textarea>
 	</div>
 	
 	<div class="button3">
-		<button type="button" onclick="
-		$('.hidden3').css('display','block');
-		$('.button3').css('display','none');
-		">내용 추가하기</button>
+		<button type="button" onclick="hh(3)">내용 추가하기</button>
 	</div>
 	</div>
 	
 	<div class="hidden3">
 	<div class="input">
 		<div class="filebox">
-			<input type="file" name="file4">
+			<input type="file" name="hiddenfile3">
 		</div>
 	</div>
 	
 	<div class="input">
-		<textarea name="content" style="height: 50px;"></textarea>
+		<textarea name="hiddencontent4" style="height: 50px;"></textarea>
 	</div>
 	
 	<div class="button4">
-		<button type="button" onclick="
-		$('.hidden4').css('display','block');
-		$('.button4').css('display','none');
-		">내용 추가하기</button>
+		<button type="button" onclick="hh(4)">내용 추가하기</button>
 	</div>
 	</div>
 	
 	<div class="hidden4">
 	<div class="input">
 		<div class="filebox">
-			<input type="file" name="file5">
+			<input type="file" name="hiddenfile4">
 		</div>
 	</div>
 	
 	<div class="input">
-		<textarea name="content" style="height: 50px;"></textarea>
+		<textarea name="hiddencontent5" style="height: 50px;"></textarea>
 		<br>이미지는 최대 5개만 첨부됩니다.
 	</div>
 	</div>
 
 	<div class="submit">
-		<button type="submit">제출</button>
+		<input type="submit">
 	</div>
 	
 	</form>
@@ -166,3 +228,6 @@ location.href='list';
 </c:otherwise>
 
 </c:choose>
+<div class="bottom">
+		<c:import url="/include/bottom.jsp" />
+</div>	

@@ -17,7 +17,6 @@ public class ListController extends HttpServlet {
 		
 		FixDAO dao = new FixDAO();
 		List<FixVO> list = null;
-		List<Integer> like = null;
 		int page = 1, size = 0, lsize = 0, tab = 1;
 		//	페이지	   게시물 갯수	페이지 갯수	     페이지 탭
 		String order = "no desc";
@@ -34,7 +33,7 @@ public class ListController extends HttpServlet {
 		try {
 			list = dao.listFix(order, page);
 			size = dao.Page();
-			lsize = (size%6 == 0) ? size/6 : size/6+1;	
+			lsize = (size%8 == 0) ? size/8 : size/8+1;	
 			
 			for (FixVO vo : list) {
 				vo.setLike(dao.detailLike(vo.getNo()));

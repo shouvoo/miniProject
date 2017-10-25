@@ -9,27 +9,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/fix/like")
-public class LikeController extends HttpServlet{
+@WebServlet("/fix/likeform")
+public class LikeFormController extends HttpServlet{
 	
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		FixDAO dao = new FixDAO();
-		FixVO fix = new FixVO();
 		int no = Integer.parseInt(request.getParameter("no"));
-		
-		fix.setIp(request.getLocalAddr());
-		fix.setNo(no);
-		
+		FixDAO dao = new FixDAO();
+		int like = 0;
 		try {
-			if(dao.LikeJungBok(fix)) {
-				dao.deleteLike(fix);
-			}
-			else {
-				dao.insertLike(fix);
-			}
+			like = dao.detailLike(no);
 		} catch (Exception e) {}
 		
-		response.sendRedirect(request.getContextPath()+"/fix/likeform?no="+no);
+		RequestDispatcher rd = request.getRequestDispatcher("/fix/like.jsp?no="+no+"&like="+like);
+		rd.forward(request, response);
 	}
 }

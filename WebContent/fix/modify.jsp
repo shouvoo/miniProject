@@ -1,7 +1,18 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!-- 합쳐지고 최소화된 최신 CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+
+<!-- 부가적인 테마 -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+
+<script src="http://code.jquery.com/jquery.min.js"></script>
+
+<!-- 합쳐지고 최소화된 최신 자바스크립트 -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 <style>
+.content{margin-top: 50px;}
 .writeTitle{font: 20px bold; color: #0085D5; background: rgb(239, 239, 239); width: 100%;
 margin-bottom: 10px;}
 .input *, .select *{height: 27px; margin: 5px;}
@@ -14,21 +25,20 @@ display: inline-block; width: 50px;}
 .submit{margin-top: 10px;}
 textarea {width: 500px;}
 </style>
-<script src="//code.jquery.com/jquery.min.js"></script>
-<script type="text/javascript">
-$('.option[value='${fix.cate}']').attr('selected', 'selected');
-</script>
 
 <c:choose>
-<c:when test="${not empty user.id}">
+<c:when test="${user.id == fix.id}">
 <script>
 alert("로그인을 해주세요.");
 </script>
 </c:when>
 
 <c:otherwise>
+<div class="header">
+		<c:import url="/include/topMenu.jsp" />
+</div>
 <div class="content">
-	<form action="${pageContext.request.contextPath }/fix/writeinsert" method="post"
+	<form action="${pageContext.request.contextPath }/fix/modifyinsert" method="post"
 	enctype="multipart/form-data">
 	
 	<div class="writeTitle">
@@ -37,18 +47,19 @@ alert("로그인을 해주세요.");
 	
 	<div class="input">
 		<span>제목</span>:
-		<input type="text" name="title">
+		<input type="text" name="title" value="${fix.title }">
+		<input name="no" value="${param.no }" type="hidden">
 	</div>
 	
 	<div class="input">
 		<span>작성자</span>:
 		<input type="text" value="${user.name }" name="writer" readonly="readonly">
 	</div>
-
+	
 	<div class="select">
-		<span><select name="cate" id="cate">
+		<span><select name="cate">
 			<option value="휴대전화">휴대전화</option>
-			<option value='노트북'>노트북</option>
+			<option value="노트북">노트북</option>
 			<option value="데스크탑">데스크탑</option>
 			<option value="디스플레이">디스플레이</option>
 			<option value="콘솔">콘솔</option>
@@ -64,21 +75,18 @@ alert("로그인을 해주세요.");
 			<option value="기타">기타</option>
 		</select></span>
 	</div>
-	
-	<div class=hh>
+
+	<c:forEach items="${file }" var="var" varStatus="a">
 	<div class="input">
-		<div class="filebox">
-			<input class="upload-name" value="파일선택" disabled="disabled">
-			<label for="ex_filename">업로드</label>
-			<input type="file" id="ex_filename" class="upload-hidden" name="file1">
-		</div>
-	</div>
-	
-	<div class="input">
+		<img src="${pageContext.request.contextPath}/common/down?filePath=fix/image&sName=${var.sysName }&dName=${var.oriName }">
+		${var.oriName }</br>
+		<input type="file" name="${a.index }">
+		<input type="hidden" name="${a.index }name" value="${var.sysName }">		
+		<input type="hidden" name="${a.index }no" value="${var.imageNo }">		
 		<textarea name="content" style="height: 50px;"
-		onclick="if(this.value=='내용을 입력하세요.'){this.value=''}">내용을 입력하세요.</textarea>
+		onclick="if(this.value == ${a}){this.value=''}">${content[a.index] }</textarea>
 	</div>
-	</div>
+	</c:forEach>
 
 	<div class="submit">
 		<button type="submit">제출</button>
@@ -89,3 +97,11 @@ alert("로그인을 해주세요.");
 </c:otherwise>
 
 </c:choose>
+<div class="bottom">
+		<c:import url="/include/bottom.jsp" />
+	</div>	
+<script>
+/* console.dir($('select[name="cate"]')); */
+$('select[name="cate"]').val('${fix.cate}');
+$('select[name="brand"]').val('${fix.brand}');
+</script>

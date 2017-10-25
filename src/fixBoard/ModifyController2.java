@@ -3,7 +3,6 @@ package fixBoard;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Enumeration;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -16,15 +15,12 @@ import com.oreilly.servlet.MultipartRequest;
 
 import common.HanbitFileRenamePolicy;
 
-@WebServlet("/fix/writeinsert")
-public class WriteController extends HttpServlet{
+@WebServlet("/fix/modifyinsert")
+public class ModifyController2 extends HttpServlet{
 
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String uploadPath = "c:/lee/jsp/miniProject/WebContent/img/fix/image";
-		File f = new File(uploadPath);
-		
-		if(!f.exists()) f.mkdirs();
 		
 		MultipartRequest mRequest = new MultipartRequest(
 				request,
@@ -33,13 +29,12 @@ public class WriteController extends HttpServlet{
 				"utf-8",
 				new HanbitFileRenamePolicy()
 		);
-
+		
+		int no  = Integer.parseInt(mRequest.getParameter("no"));
 		String title = mRequest.getParameter("title");
-		String writer = mRequest.getParameter("writer");
+		String content = "";
 		String cate = mRequest.getParameter("cate");
 		String brand = mRequest.getParameter("brand");
-		String content = "";
-		String thumb = new ThumbMake().Thumb(mRequest.getFile("file1"));
 		
 		for (int i = 0; i < mRequest.getParameterValues("content").length; i++) {
 			
@@ -54,59 +49,54 @@ public class WriteController extends HttpServlet{
 			
 		}
 		
-		Enumeration<String> fNames = mRequest.getFileNames();
-		
 		FixDAO dao = new FixDAO();
-		int no = 0;
-		
-		try {
-			no = dao.number();
-		} catch (Exception e1) {}
-		
 		FixVO fix = new FixVO();
-		
-		fix.setBrand(brand);
-		fix.setCate(cate);
-		fix.setContent(content);
-		fix.setWriter(writer);
-		fix.setTitle(title);
-		fix.setNo(no);
-		fix.setThumb(thumb);
-		fix.setIp(request.getLocalAddr());
-		fix.setId((String)request.getAttribute("id"));
-		
-		try {
-			dao.insertFix(fix);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		if(mRequest.getFile("0") != null) {
+			fix.setThumb(new ThumbMake().Thumb(mRequest.getFile("0")));
+			new File("c:/lee/jsp/miniProject/WebContent/img/fix/thumb", mRequest.getParameter("0name")).delete();
 		}
 
-		while (fNames.hasMoreElements()) {
+		fix.setTitle(title);
+		fix.setContent(content);
+		fix.setNo(no);
+		fix.setCate(cate);
+		fix.setBrand(brand);
+		
+		try {
+			dao.modifyFix(fix);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+		for(int i = 0; i < 5; i++) {
 			FixVO ff = new FixVO();
-			String fName = fNames.nextElement();
+			String fName = ""+i;
 	
 			File file = mRequest.getFile(fName);
 	
 		if(file != null) {
 			String oriName = mRequest.getOriginalFileName(fName);
-			String systemName  = mRequest.getFilesystemName(fName);
-
-			ff.setNo(no);
-			ff.setSysName(systemName);
+			String sysName = mRequest.getFilesystemName(fName);
+			String delFile = mRequest.getParameter(i+"name");
+			int imageNo = Integer.parseInt(mRequest.getParameter(i+"no"));
+			
+			new File(uploadPath, delFile).delete();
+			
 			ff.setOriName(oriName);
+			ff.setSysName(sysName);
+			ff.setImageNo(imageNo);
 			
 			BufferedImage img = ImageIO.read(file);
 			
-			ff.setWidth(img.getWidth());			
+			ff.setWidth(img.getWidth());
 			
 			try {
-				dao.insertFile(ff);
+				dao.modifyFile(ff);
 			} catch (Exception e) {}
 			
 			}
 		}
-
+		
 		response.sendRedirect(request.getContextPath()+"/fix/list");
 	}
 }

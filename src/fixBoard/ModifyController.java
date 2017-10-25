@@ -26,9 +26,11 @@ public class ModifyController extends HttpServlet{
 		
 		FixDAO dao = new FixDAO();
 		FixVO fix = new FixVO();
+		List<FixVO> file = null;
 		
 		try {
 			fix = dao.detailFix(no);
+			file = dao.detailFile(no);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -42,6 +44,7 @@ public class ModifyController extends HttpServlet{
 		
 		RequestDispatcher rd = request.getRequestDispatcher("/fix/modify.jsp");
 
+		request.setAttribute("file", file);
 		request.setAttribute("fix", fix);
 		request.setAttribute("content", content);
 		
